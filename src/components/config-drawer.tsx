@@ -1,6 +1,8 @@
 import { type SVGProps } from 'react'
 import { Root as Radio, Item } from '@radix-ui/react-radio-group'
-import { CircleCheck, RotateCcw, Settings } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { themePalettes } from '@/config/theme-palettes'
+import { CircleCheck, Edit3, RotateCcw, Settings } from 'lucide-react'
 import { IconDir } from '@/assets/custom/icon-dir'
 import { IconLayoutCompact } from '@/assets/custom/icon-layout-compact'
 import { IconLayoutDefault } from '@/assets/custom/icon-layout-default'
@@ -18,6 +20,7 @@ import { useTheme } from '@/context/theme-provider'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -30,12 +33,13 @@ import { useSidebar } from './ui/sidebar'
 export function ConfigDrawer() {
   const { setOpen } = useSidebar()
   const { resetDir } = useDirection()
-  const { resetTheme } = useTheme()
+  const { resetPalette, resetTheme } = useTheme()
   const { resetLayout } = useLayout()
 
   const handleReset = () => {
     setOpen(true)
     resetDir()
+    resetPalette()
     resetTheme()
     resetLayout()
   }
@@ -65,6 +69,7 @@ export function ConfigDrawer() {
           <SidebarConfig />
           <LayoutConfig />
           <DirConfig />
+          <PaletteConfig />
         </div>
         <SheetFooter className='gap-2'>
           <Button
@@ -209,6 +214,110 @@ function ThemeConfig() {
       </div>
     </div>
   )
+}
+
+function PaletteConfig() {
+  const { customPalette, defaultPalette, palette, setPalette } = useTheme()
+
+  return (
+    <div>
+      <SectionTitle
+        title='Palette'
+        showReset={palette !== defaultPalette}
+        onReset={() => setPalette(defaultPalette)}
+      />
+      <Radio
+        value={palette}
+        onValueChange={setPalette}
+        className='grid w-full gap-3'
+        aria-label='Select color palette'
+        aria-describedby='palette-description'
+      >
+        {themePalettes.map((item) => (
+          <Item
+            key={item.value}
+            value={item.value}
+            className='group rounded-lg border border-border p-3 text-left transition outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            aria-label={`Select ${item.label.toLowerCase()} palette`}
+          >
+            <div className='flex items-center justify-between gap-3'>
+              <div>
+                <div className='text-sm font-medium'>{item.label}</div>
+                <div className='text-xs text-muted-foreground'>
+                  {item.description}
+                </div>
+              </div>
+              <CircleCheck
+                className={cn(
+                  'size-5 fill-primary stroke-white',
+                  'opacity-0 transition-opacity group-data-[state=checked]:opacity-100'
+                )}
+              />
+            </div>
+            <div className='mt-3 flex gap-2'>
+              {getPalettePreview(item.value, customPalette).map(
+                (swatch, index) => (
+                  <span
+                    key={`${item.value}-${index}`}
+                    className={cn('h-8 flex-1 rounded-md', swatch.className)}
+                    style={swatch.style}
+                  />
+                )
+              )}
+            </div>
+            {item.value === 'custom' && (
+              <div className='mt-3 flex justify-end'>
+                <SheetClose asChild>
+                  <Button
+                    asChild
+                    size='sm'
+                    variant='outline'
+                    className='h-8 text-xs'
+                  >
+                    <Link to='/settings/appearance' hash='custom-palette'>
+                      <Edit3 />
+                      Edit colors
+                    </Link>
+                  </Button>
+                </SheetClose>
+              </div>
+            )}
+          </Item>
+        ))}
+      </Radio>
+      <div id='palette-description' className='sr-only'>
+        Choose the accent color palette applied across light and dark themes
+      </div>
+    </div>
+  )
+}
+
+function getPalettePreview(
+  palette: string,
+  customPalette: ReturnType<typeof useTheme>['customPalette']
+) {
+  if (palette !== 'custom') {
+    return (
+      themePalettes
+        .find((item) => item.value === palette)
+        ?.preview.map((className) => ({ className, style: undefined })) ?? []
+    )
+  }
+
+  return [
+    {
+      className: '',
+      style: { backgroundColor: customPalette.light.primary },
+    },
+    {
+      className: '',
+      style: { backgroundColor: customPalette.light.secondary },
+    },
+    {
+      className: '',
+      style: { backgroundColor: customPalette.dark.accent },
+    },
+  ]
 }
 
 function SidebarConfig() {
