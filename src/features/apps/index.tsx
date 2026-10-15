@@ -85,12 +85,10 @@ export function Apps() {
     <>
       {/* ===== Top Heading ===== */}
       <Header>
-        <Search />
-        <div className='ms-auto flex items-center gap-4'>
-          <ThemeSwitch />
-          <ConfigDrawer />
-          <ProfileDropdown />
-        </div>
+        <Search className='me-auto' />
+        <ThemeSwitch />
+        <ConfigDrawer />
+        <ProfileDropdown />
       </Header>
 
       {/* ===== Content ===== */}
@@ -107,7 +105,7 @@ export function Apps() {
           <div className='flex flex-col gap-4 sm:my-4 sm:flex-row'>
             <Input
               placeholder='Filter apps...'
-              className='h-9 w-40 lg:w-[250px]'
+              className='h-9 w-40 lg:w-62.5'
               value={searchTerm}
               onChange={handleSearch}
             />
